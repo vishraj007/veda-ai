@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "turbo": "^2.5.0",
+    "turbo": "^2.9.15",
     "typescript": "^5.7.0"
   },
   "packageManager": "npm@10.0.0"
