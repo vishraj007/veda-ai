@@ -15,6 +15,7 @@
     "dev:all": "turbo run dev --parallel"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "turbo": "^2.5.0",
     "typescript": "^5.7.0"
   },
