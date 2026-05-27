@@ -2,6 +2,17 @@ import PDFDocument from 'pdfkit';
 import type { IQuestionPaper } from '../models/QuestionPaper.js';
 import { logger } from '../utils/logger.js';
 
+interface PutOptions {
+  fontSize?: number;
+  font?: string;
+  color?: string;
+  width?: number;
+  align?: 'left' | 'center' | 'right' | 'justify';
+  lineBreak?: boolean;
+  underline?: boolean;
+  continued?: boolean;
+}
+
 export async function generatePdf(paper: IQuestionPaper): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -32,26 +43,22 @@ export async function generatePdf(paper: IQuestionPaper): Promise<Buffer> {
       Challenging: '#991B1B',
     };
 
-    // ── helpers ──────────────────────────────────────────────────
-    function hRule(weight = 1, color = BLACK) {
-      doc.moveDown(0.3);
-      doc.moveTo(L, doc.y)
-         .lineTo(doc.page.width - R, doc.y)
-         .lineWidth(weight)
-         .strokeColor(color)
-         .stroke();
-      doc.moveDown(0.5);
-    }
-
-    /** Write text at an explicit (x, y); returns the new doc.y after the block. */
-    function put(
-      text: string,
-      x: number,
-      y: number,
-      opts: PDFKit.Mixins.TextOptions & { fontSize?: number; font?: string; color?: string } = {}
-    ) {
+    // ── helper: place text at explicit (x, y) ──────────────────
+    function put(text: string, x: number, y: number, opts: PutOptions = {}) {
       const { fontSize = 11, font = 'Helvetica', color = BLACK, ...rest } = opts;
       doc.fontSize(fontSize).font(font).fillColor(color).text(text, x, y, rest);
+    }
+
+    // ── helper: horizontal rule ─────────────────────────────────
+    function hRule(weight = 1, color = BLACK) {
+      doc.moveDown(0.3);
+      doc
+        .moveTo(L, doc.y)
+        .lineTo(doc.page.width - R, doc.y)
+        .lineWidth(weight)
+        .strokeColor(color)
+        .stroke();
+      doc.moveDown(0.5);
     }
 
     // ── HEADER ───────────────────────────────────────────────────
@@ -86,7 +93,7 @@ export async function generatePdf(paper: IQuestionPaper): Promise<Buffer> {
     put('Name: _________________________________________________', L, doc.y, {
       fontSize: 11, width: pageW,
     });
-    doc.moveDown(0.4);
+    doc.moveDown(0.5);
     put(
       `Roll No: _______________     Class: ${paper.className}     Section: _______________`,
       L, doc.y, { fontSize: 11, width: pageW }
@@ -95,6 +102,8 @@ export async function generatePdf(paper: IQuestionPaper): Promise<Buffer> {
 
     // ── SECTIONS ─────────────────────────────────────────────────
     for (const section of paper.sections) {
+
+      // Section header
       put(section.title, L, doc.y, {
         fontSize: 13, font: 'Helvetica-Bold', align: 'center', width: pageW,
       });
@@ -104,7 +113,7 @@ export async function generatePdf(paper: IQuestionPaper): Promise<Buffer> {
       put(section.instruction, L, doc.y, {
         fontSize: 10, font: 'Helvetica-Oblique', color: GRAY, align: 'center', width: pageW,
       });
-      doc.moveDown(0.7);
+      doc.moveDown(0.8);
 
       for (const q of section.questions) {
         // Page break guard
@@ -114,45 +123,50 @@ export async function generatePdf(paper: IQuestionPaper): Promise<Buffer> {
 
         const diffColor  = difficultyColor[q.difficulty] ?? DARK;
         const marksLabel = `[${q.marks} Mark${q.marks > 1 ? 's' : ''}]`;
-        const indent     = L + 22;     // question text indent
-        const indentW    = pageW - 22; // question text width
 
-        // ── row 1: number | badge | marks ──────────────────────
-        // Each written to an explicit (x, y) — NO continued:true, NO shared width
-        const rowY = doc.y;
+        // ── Line 1: "1. Question text goes here..."
+        // Use continued:true WITHOUT a narrow width — full pageW is used
+        // so the question text wraps correctly across the full line width
+        doc
+          .fontSize(11)
+          .font('Helvetica-Bold')
+          .fillColor(BLACK)
+          .text(`${q.number}. `, L, doc.y, { continued: true });
 
-        put(`${q.number}.`, L, rowY, {
-          fontSize: 11, font: 'Helvetica-Bold', width: 18, lineBreak: false,
+        doc
+          .font('Helvetica')
+          .fillColor(BLACK)
+          .text(q.text);
+        // doc.y is now positioned below the full question text ✅
+
+        // ── Line 2: [Easy] on left, [1 Mark] on right ──────────
+        // Two independent put() calls at the SAME y — no width inheritance
+        const badgeY = doc.y;
+
+        put(`[${q.difficulty}]`, L + 20, badgeY, {
+          fontSize: 9, font: 'Helvetica-Bold', color: diffColor, width: 80,
         });
 
-        put(`[${q.difficulty}]`, L + 20, rowY, {
-          fontSize: 9, font: 'Helvetica-Bold', color: diffColor, width: 70, lineBreak: false,
-        });
-
-        put(marksLabel, doc.page.width - R - 70, rowY, {
+        put(marksLabel, L + pageW - 70, badgeY, {
           fontSize: 9, font: 'Helvetica-Bold', color: GRAY, width: 70, align: 'right',
         });
-        // ↑ last put() with explicit y — doc.y is now rowY + one line-height
+        // doc.y = badgeY + 9pt line-height after both calls ✅
 
-        // ── row 2: question text ────────────────────────────────
-        put(q.text, indent, doc.y, {
-          fontSize: 11, width: indentW,
-        });
+        doc.moveDown(0.3);
 
-        // ── row 3: options (MCQ) ────────────────────────────────
+        // ── Line 3: options (MCQ only) ──────────────────────────
         if (q.options && q.options.length > 0) {
           const letters = ['a', 'b', 'c', 'd', 'e'];
-          // Write all options as one string — pdfkit will wrap naturally
           const optLine = q.options
             .map((o, i) => `(${letters[i]}) ${o}`)
             .join('     ');
 
-          put(optLine, indent, doc.y, {
-            fontSize: 10, color: DARK, width: indentW,
+          put(optLine, L + 20, doc.y, {
+            fontSize: 10, color: DARK, width: pageW - 20,
           });
         }
 
-        doc.moveDown(0.7);
+        doc.moveDown(0.8);
       }
 
       doc.moveDown(0.5);
@@ -179,13 +193,15 @@ export async function generatePdf(paper: IQuestionPaper): Promise<Buffer> {
         }
 
         const ansY = doc.y;
+
         put(`${a.questionNumber}.`, L, ansY, {
-          fontSize: 10, font: 'Helvetica-Bold', width: 22, lineBreak: false,
+          fontSize: 10, font: 'Helvetica-Bold', width: 24,
         });
-        put(a.answer, L + 24, ansY, {
-          fontSize: 10, color: DARK, width: pageW - 24,
+        put(a.answer, L + 26, ansY, {
+          fontSize: 10, color: DARK, width: pageW - 26,
         });
-        doc.moveDown(0.3);
+
+        doc.moveDown(0.4);
       }
     }
 
