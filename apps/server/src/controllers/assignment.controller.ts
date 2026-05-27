@@ -12,7 +12,6 @@ export async function create(req: Request, res: Response, next: NextFunction): P
   try {
     const { title, subject, className, schoolName, dueDate, questionTypes, additionalInstructions, difficulty, bloomLevels, difficultyDistribution } = req.body;
 
-    // Calculate totals
     const totalQuestions = questionTypes.reduce((sum: number, qt: { numberOfQuestions: number }) => sum + qt.numberOfQuestions, 0);
     const totalMarks = questionTypes.reduce((sum: number, qt: { numberOfQuestions: number; marksPerQuestion: number }) => sum + qt.numberOfQuestions * qt.marksPerQuestion, 0);
 
@@ -33,7 +32,6 @@ export async function create(req: Request, res: Response, next: NextFunction): P
       totalMarks,
     });
 
-    // Add job to BullMQ queue
     await addGenerationJob(assignment._id.toString());
 
     res.status(201).json({
@@ -79,10 +77,8 @@ export async function deleteAssignment(req: Request, res: Response, next: NextFu
       throw createError('Assignment not found', 404);
     }
 
-    // Delete associated paper
     if (assignment.questionPaperId) {
       await QuestionPaperModel.findByIdAndDelete(assignment.questionPaperId);
-      // Clear cache
       try {
         const redis = getRedisClient();
         await redis.del(`paper:${req.params.id}`);
@@ -90,7 +86,6 @@ export async function deleteAssignment(req: Request, res: Response, next: NextFu
     }
 
     await AssignmentModel.findByIdAndDelete(req.params.id);
-
     res.json({ success: true, data: { message: 'Assignment deleted successfully' } });
   } catch (error) {
     next(error);
@@ -105,7 +100,6 @@ export async function regenerate(req: Request, res: Response, next: NextFunction
       throw createError('Assignment not found', 404);
     }
 
-    // Delete old paper if exists
     if (assignment.questionPaperId) {
       await QuestionPaperModel.findByIdAndDelete(assignment.questionPaperId);
       try {
@@ -114,7 +108,6 @@ export async function regenerate(req: Request, res: Response, next: NextFunction
       } catch { /* ignore */ }
     }
 
-    // Reset status and queue new job
     assignment.status = 'generating';
     assignment.questionPaperId = undefined;
     await assignment.save();
@@ -132,7 +125,7 @@ export async function getPaper(req: Request, res: Response, next: NextFunction):
   try {
     const assignmentId = req.params.id;
 
-    // Check Redis cache first
+    // 1. Check Redis cache first
     try {
       const redis = getRedisClient();
       const cached = await redis.get(`paper:${assignmentId}`);
@@ -143,13 +136,40 @@ export async function getPaper(req: Request, res: Response, next: NextFunction):
       }
     } catch { /* fallthrough to DB */ }
 
-    // Fetch from MongoDB
+    // 2. Check MongoDB
     const paper = await QuestionPaperModel.findOne({ assignmentId }).lean();
     if (!paper) {
-      throw createError('Question paper not found. It may still be generating.', 404);
+      // 3. ✅ Check assignment status — don't throw 404 if still generating
+      const assignment = await AssignmentModel.findById(assignmentId).select('status').lean();
+
+      if (!assignment) {
+        throw createError('Assignment not found', 404);
+      }
+
+      if (assignment.status === 'generating') {
+        // Return 202 — paper exists but isn't ready yet
+        res.status(202).json({
+          success: false,
+          status: 'generating',
+          message: 'Question paper is still being generated. Listen to socket events for updates.',
+        });
+        return;
+      }
+
+      if (assignment.status === 'failed') {
+        res.status(500).json({
+          success: false,
+          status: 'failed',
+          message: 'Question paper generation failed. Please try regenerating.',
+        });
+        return;
+      }
+
+      // Status is completed but no paper found — something went wrong
+      throw createError('Question paper not found.', 404);
     }
 
-    // Update cache
+    // 4. Cache for next time
     try {
       const redis = getRedisClient();
       await redis.setex(`paper:${assignmentId}`, 3600, JSON.stringify(paper));

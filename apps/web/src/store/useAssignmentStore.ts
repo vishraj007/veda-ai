@@ -41,7 +41,13 @@ export const useAssignmentStore = create<AssignmentStore>((set) => ({
   },
 
   createAssignment: async (data) => {
-    set({ loading: true, error: null, generationStatus: 'generating', generationProgress: 0, generationMessage: 'Submitting assignment...' });
+    set({
+      loading: true,
+      error: null,
+      generationStatus: 'generating',
+      generationProgress: 0,
+      generationMessage: 'Submitting assignment...',
+    });
     try {
       const res = await api.post('/assignments', data);
       const assignment = res.data.data as Assignment;
@@ -71,14 +77,51 @@ export const useAssignmentStore = create<AssignmentStore>((set) => ({
     set({ loading: true, error: null });
     try {
       const res = await api.get(`/assignments/${id}/paper`);
-      set({ currentPaper: res.data.data, loading: false, generationStatus: 'completed', generationProgress: 100 });
-    } catch (err) {
-      set({ error: (err as Error).message, loading: false });
+
+      // ✅ 202 = paper still generating, wait for socket event
+      // (axios does NOT throw for 2xx, so we must check manually)
+      if (res.status === 202) {
+        set({
+          loading: false,
+          generationStatus: 'generating',
+          generationProgress: 0,
+          generationMessage: res.data.message || 'Generating your question paper...',
+        });
+        return;
+      }
+
+      // ✅ 200 = paper ready
+      set({
+        currentPaper: res.data.data,
+        loading: false,
+        generationStatus: 'completed',
+        generationProgress: 100,
+      });
+    } catch (err: unknown) {
+      // 4xx/5xx land here
+      const status = (err as { response?: { status: number } })?.response?.status;
+
+      if (status === 404) {
+        // Paper genuinely missing (not generating) — treat as failed
+        set({
+          loading: false,
+          generationStatus: 'failed',
+          generationMessage: 'Question paper not found.',
+          error: 'Question paper not found.',
+        });
+      } else {
+        set({ error: (err as Error).message, loading: false });
+      }
     }
   },
 
   regenerate: async (id) => {
-    set({ generationStatus: 'generating', generationProgress: 0, generationMessage: 'Regenerating...', currentPaper: null });
+    set({
+      generationStatus: 'generating',
+      generationProgress: 0,
+      generationMessage: 'Regenerating...',
+      currentPaper: null,
+    });
     try {
       await api.post(`/assignments/${id}/regenerate`);
     } catch (err) {

@@ -33,10 +33,16 @@ export default function OutputPage() {
   const [downloading, setDownloading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  // Fetch paper on mount
+  // ✅ FIXED: Only fetch from API if NOT already generating
+  // If generationStatus is 'generating', we just came from the create page
+  // and the socket events will deliver the paper — hitting the API now
+  // causes the race condition 404 error in production
   useEffect(() => {
-    fetchPaper(id);
-  }, [id, fetchPaper]);
+    if (generationStatus !== 'generating') {
+      fetchPaper(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // only re-run if assignment id changes
 
   // WebSocket connection
   useEffect(() => {
@@ -56,8 +62,10 @@ export default function OutputPage() {
       if (data.assignmentId === id) {
         setGenerationStatus('completed', 100, 'Question paper generated!');
         if (data.paper) {
+          // ✅ Paper arrives directly from socket — no extra API call needed
           setCurrentPaper(data.paper as Parameters<typeof setCurrentPaper>[0]);
         } else {
+          // Fallback: socket sent completion but no paper attached
           fetchPaper(id);
         }
         toast.success('Question paper generated successfully!');
@@ -79,7 +87,8 @@ export default function OutputPage() {
       offCompleted();
       offFailed();
     };
-  }, [id, setGenerationStatus, setCurrentPaper, fetchPaper]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // only re-run if assignment id changes
 
   const handleDownload = useCallback(async () => {
     setDownloading(true);
