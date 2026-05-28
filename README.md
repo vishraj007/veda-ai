@@ -58,17 +58,17 @@ The app features real-time generation progress via WebSockets, PDF export, a stu
 ### Mobile Output View
 | Output (Mobile) |
 |----------------|
-| ![Output Mobile](./screenshots/veda7.jpg) |
+| ![Output Mobile](./screenshots/veda13.jpg) |
 
 ### Classroom Management
 | My Groups | Group Detail (empty) | Group Detail (with students) | Bulk Import CSV |
 |-----------|---------------------|------------------------------|-----------------|
-| ![Groups](./screenshots/veda8.jpg) | ![Group Detail](./screenshots/veda9.jpg) | ![Group Students](./screenshots/veda10.jpg) | ![CSV Import](./screenshots/veda11.jpg) |
+| ![Groups](./screenshots/veda7.jpg) | ![Group Detail](./screenshots/veda8.jpg) | ![Group Students](./screenshots/veda9.jpg) | ![CSV Import](./screenshots/veda10.jpg) |
 
 ### AI Teacher's Toolkit & Library
 | AI Toolkit | My Library |
 |------------|------------|
-| ![Toolkit](./screenshots/veda12.jpg) | ![Library](./screenshots/veda13.jpg) |
+| ![Toolkit](./screenshots/veda11.jpg) | ![Library](./screenshots/veda12.jpg) |
 
 > Screenshots are in the `screenshots/` folder, named `veda1.jpg` through `veda12.jpg`.
 
