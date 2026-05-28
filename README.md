@@ -70,7 +70,7 @@ The app features real-time generation progress via WebSockets, PDF export, a stu
 |------------|------------|
 | ![Toolkit](./screenshots/veda11.jpg) | ![Library](./screenshots/veda12.jpg) |
 
-> Screenshots are in the `screenshots/` folder, named `veda1.jpg` through `veda12.jpg`.
+
 
 ---
 
