@@ -44,33 +44,33 @@ The app features real-time generation progress via WebSockets, PDF export, a stu
 ### Dashboard & Assignments
 | Desktop | Mobile |
 |---------|--------|
-| ![Dashboard Desktop](./screenshots/veda1.png) | ![Dashboard Mobile](./screenshots/veda2.png) |
+| ![Dashboard Desktop](./screenshots/veda1.jpg) | ![Dashboard Mobile](./screenshots/veda2.jpg) |
 
 ### Create Question Paper
 | Assignment Details | Exam Pattern & Difficulty |
 |-------------------|--------------------------|
-| ![Create Form](./screenshots/veda3.png) | ![Exam Pattern](./screenshots/veda4.png) |
+| ![Create Form](./screenshots/veda3.jpg) | ![Exam Pattern](./screenshots/veda4.jpg) |
 
 | Bloom's Taxonomy & Question Types | Generated Output |
 |----------------------------------|-----------------|
-| ![Blooms Taxonomy](./screenshots/veda5.png) | ![Output Desktop](./screenshots/veda6.png) |
+| ![Blooms Taxonomy](./screenshots/veda5.jpg) | ![Output Desktop](./screenshots/veda6.jpg) |
 
 ### Mobile Output View
 | Output (Mobile) |
 |----------------|
-| ![Output Mobile](./screenshots/veda7.png) |
+| ![Output Mobile](./screenshots/veda7.jpg) |
 
 ### Classroom Management
 | My Groups | Group Detail (empty) | Group Detail (with students) | Bulk Import CSV |
 |-----------|---------------------|------------------------------|-----------------|
-| ![Groups](./screenshots/veda8.png) | ![Group Detail](./screenshots/veda9.png) | ![Group Students](./screenshots/veda10.png) | ![CSV Import](./screenshots/veda11.png) |
+| ![Groups](./screenshots/veda8.jpg) | ![Group Detail](./screenshots/veda9.jpg) | ![Group Students](./screenshots/veda10.jpg) | ![CSV Import](./screenshots/veda11.jpg) |
 
 ### AI Teacher's Toolkit & Library
 | AI Toolkit | My Library |
 |------------|------------|
-| ![Toolkit](./screenshots/veda12.png) | ![Library](./screenshots/veda13.png) |
+| ![Toolkit](./screenshots/veda12.jpg) | ![Library](./screenshots/veda13.jpg) |
 
-> Screenshots are in the `screenshots/` folder, named `veda1.png` through `veda12.png`.
+> Screenshots are in the `screenshots/` folder, named `veda1.jpg` through `veda12.jpg`.
 
 ---
 
