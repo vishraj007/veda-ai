@@ -56,9 +56,9 @@ The app features real-time generation progress via WebSockets, PDF export, a stu
 | ![Blooms Taxonomy](./screenshots/veda5.jpg) | ![Output Desktop](./screenshots/veda6.jpg) |
 
 ### Mobile Output View
-| Output (Mobile) |
-|----------------|
-| ![Output Mobile](./screenshots/veda13.jpg) |
+| Output (Mobile) | Question Difficulty (Mobile) |
+|----------------|------------------------------|
+| ![Output Mobile](./screenshots/veda13.jpg) | ![Question Difficulty](./screenshots/veda14.jpg) |
 
 ### Classroom Management
 | My Groups | Group Detail (empty) | Group Detail (with students) | Bulk Import CSV |
