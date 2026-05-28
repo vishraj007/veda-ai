@@ -58,17 +58,17 @@ The app features real-time generation progress via WebSockets, PDF export, a stu
 ### Mobile Output View
 | Output (Mobile) |
 |----------------|
-| ![Output Mobile](./screenshots/veda13.jpg) |
+| ![Output Mobile](./screenshots/veda7.jpg) |
 
 ### Classroom Management
 | My Groups | Group Detail (empty) | Group Detail (with students) | Bulk Import CSV |
 |-----------|---------------------|------------------------------|-----------------|
-| ![Groups](./screenshots/veda7.jpg) | ![Group Detail](./screenshots/veda8.jpg) | ![Group Students](./screenshots/veda9.jpg) | ![CSV Import](./screenshots/veda10.jpg) |
+| ![Groups](./screenshots/veda8.jpg) | ![Group Detail](./screenshots/veda9.jpg) | ![Group Students](./screenshots/veda10.jpg) | ![CSV Import](./screenshots/veda11.jpg) |
 
 ### AI Teacher's Toolkit & Library
 | AI Toolkit | My Library |
 |------------|------------|
-| ![Toolkit](./screenshots/veda11.jpg) | ![Library](./screenshots/veda12.jpg) |
+| ![Toolkit](./screenshots/veda12.jpg) | ![Library](./screenshots/veda13.jpg) |
 
 > Screenshots are in the `screenshots/` folder, named `veda1.jpg` through `veda12.jpg`.
 
@@ -334,7 +334,7 @@ vedaai/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/vedaai.git
+git clone https://github.com/vishraj007/veda-ai.git
 cd vedaai
 
 # Install all dependencies (monorepo)
@@ -425,6 +425,6 @@ MIT License — feel free to use, modify, and distribute.
 
 Built by **Vishal Rawat**
 
-[Live Demo](https://veda-ai-web-psi.vercel.app) · [Report Bug](https://github.com/your-username/vedaai/issues) · [Request Feature](https://github.com/your-username/vedaai/issues)
+[Live Demo](https://veda-ai-web-psi.vercel.app) · [Report Bug](https://github.com/vishraj007/veda-ai/issues) · [Request Feature](https://github.com/vishraj007/veda-ai/issues)
 
 </div>
